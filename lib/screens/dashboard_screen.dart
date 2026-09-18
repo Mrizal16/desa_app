@@ -126,12 +126,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         backgroundColor: const Color(0xFF0284C7),
         foregroundColor: Colors.white,
-        actions: [
+        /* actions: [
           IconButton(
             onPressed: logout,
             icon: const Icon(Icons.logout),
           ),
-        ],
+        ], */
       ),
       body: loading
           ? const Center(
