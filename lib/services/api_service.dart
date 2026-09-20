@@ -221,7 +221,8 @@ class ApiService {
     request.fields['letter_type_id'] =
         letterTypeId.toString();
 
-    request.fields['purpose'] = purpose;
+    request.fields['purpose'] =
+        purpose;
 
     if (deliveryMethod != null &&
         deliveryMethod.isNotEmpty) {
@@ -260,7 +261,8 @@ class ApiService {
       streamedResponse,
     );
 
-    final data = jsonDecode(response.body);
+    final data =
+        jsonDecode(response.body);
 
     if (response.statusCode >= 200 &&
         response.statusCode < 300) {
@@ -270,6 +272,84 @@ class ApiService {
     throw Exception(
       data['message'] ??
           'Gagal mengajukan surat.',
+    );
+  }
+
+  static Future<Map<String, dynamic>>
+      reviseLetter({
+    required int letterId,
+    PlatformFile? ktpFile,
+    PlatformFile? kkFile,
+    PlatformFile? supportingFile,
+  }) async {
+    final token = await getToken();
+
+    if (token == null) {
+      throw Exception(
+        'Token tidak ditemukan.',
+      );
+    }
+
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse(
+        '${ApiConfig.baseUrl}/letters/$letterId/revision',
+      ),
+    );
+
+    request.headers.addAll({
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token',
+    });
+
+    if (ktpFile != null) {
+      request.files.add(
+        await _platformFileToMultipart(
+          'ktp',
+          ktpFile,
+        ),
+      );
+    }
+
+    if (kkFile != null) {
+      request.files.add(
+        await _platformFileToMultipart(
+          'kk',
+          kkFile,
+        ),
+      );
+    }
+
+    if (supportingFile != null) {
+      request.files.add(
+        await _platformFileToMultipart(
+          'supporting_document',
+          supportingFile,
+        ),
+      );
+    }
+
+    final streamedResponse =
+        await request.send();
+
+    final response =
+        await http.Response.fromStream(
+      streamedResponse,
+    );
+
+    final data =
+        jsonDecode(response.body);
+
+    if (response.statusCode >= 200 &&
+        response.statusCode < 300) {
+      return Map<String, dynamic>.from(
+        data,
+      );
+    }
+
+    throw Exception(
+      data['message'] ??
+          'Gagal mengirim revisi surat.',
     );
   }
 
@@ -309,7 +389,8 @@ class ApiService {
         ),
         headers: {
           'Accept': 'application/json',
-          'Authorization': 'Bearer $token',
+          'Authorization':
+              'Bearer $token',
         },
       );
     }
