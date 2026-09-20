@@ -221,8 +221,7 @@ class ApiService {
     request.fields['letter_type_id'] =
         letterTypeId.toString();
 
-    request.fields['purpose'] =
-        purpose;
+    request.fields['purpose'] = purpose;
 
     if (deliveryMethod != null &&
         deliveryMethod.isNotEmpty) {
@@ -278,6 +277,7 @@ class ApiService {
   static Future<Map<String, dynamic>>
       reviseLetter({
     required int letterId,
+    required String purpose,
     PlatformFile? ktpFile,
     PlatformFile? kkFile,
     PlatformFile? supportingFile,
@@ -301,6 +301,8 @@ class ApiService {
       'Accept': 'application/json',
       'Authorization': 'Bearer $token',
     });
+
+    request.fields['purpose'] = purpose;
 
     if (ktpFile != null) {
       request.files.add(

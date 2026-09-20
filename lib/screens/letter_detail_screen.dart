@@ -136,12 +136,20 @@ class _LetterDetailScreenState
         builder: (_) => ReviseLetterScreen(
           letterId:
               letter!['id'] ?? widget.letterId,
+
           requestNumber:
               letter!['request_number']
                       ?.toString() ??
                   '-',
+
+          purpose:
+              letter!['purpose']
+                      ?.toString() ??
+                  '',
+
           adminNote:
-              letter!['admin_note']?.toString(),
+              letter!['admin_note']
+                  ?.toString(),
         ),
       ),
     );
@@ -289,8 +297,8 @@ class _LetterDetailScreenState
                                   '-',
                               style:
                                   const TextStyle(
-                                color: Colors
-                                    .white70,
+                                color:
+                                    Colors.white70,
                               ),
                             ),
                           ],

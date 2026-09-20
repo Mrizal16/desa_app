@@ -6,12 +6,14 @@ import '../services/api_service.dart';
 class ReviseLetterScreen extends StatefulWidget {
   final int letterId;
   final String requestNumber;
+  final String purpose;
   final String? adminNote;
 
   const ReviseLetterScreen({
     super.key,
     required this.letterId,
     required this.requestNumber,
+    required this.purpose,
     this.adminNote,
   });
 
@@ -22,11 +24,22 @@ class ReviseLetterScreen extends StatefulWidget {
 
 class _ReviseLetterScreenState
     extends State<ReviseLetterScreen> {
+  late TextEditingController purposeController;
+
   PlatformFile? ktpFile;
   PlatformFile? kkFile;
   PlatformFile? supportingFile;
 
   bool submitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    purposeController = TextEditingController(
+      text: widget.purpose,
+    );
+  }
 
   Future<PlatformFile?> pickFile() async {
     final result = await FilePicker.pickFiles(
@@ -90,6 +103,14 @@ class _ReviseLetterScreenState
   }
 
   Future<void> submitRevision() async {
+    if (purposeController.text.trim().isEmpty) {
+      showMessage(
+        'Keperluan wajib diisi.',
+      );
+
+      return;
+    }
+
     if (ktpFile == null &&
         kkFile == null &&
         supportingFile == null) {
@@ -107,6 +128,7 @@ class _ReviseLetterScreenState
     try {
       await ApiService.reviseLetter(
         letterId: widget.letterId,
+        purpose: purposeController.text.trim(),
         ktpFile: ktpFile,
         kkFile: kkFile,
         supportingFile: supportingFile,
@@ -230,6 +252,12 @@ class _ReviseLetterScreenState
   }
 
   @override
+  void dispose() {
+    purposeController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor:
@@ -297,8 +325,7 @@ class _ReviseLetterScreenState
                   ),
                 ),
 
-                if (widget.adminNote !=
-                        null &&
+                if (widget.adminNote != null &&
                     widget.adminNote!
                         .trim()
                         .isNotEmpty) ...[
@@ -321,6 +348,35 @@ class _ReviseLetterScreenState
                   ),
                 ],
               ],
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          const Text(
+            'Keperluan',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          const SizedBox(height: 8),
+
+          TextField(
+            controller: purposeController,
+            enabled: !submitting,
+            maxLines: 4,
+            maxLength: 1000,
+            decoration: InputDecoration(
+              hintText:
+                  'Keperluan pengajuan surat...',
+              filled: true,
+              fillColor: Colors.white,
+              border: OutlineInputBorder(
+                borderRadius:
+                    BorderRadius.circular(14),
+              ),
             ),
           ),
 
@@ -415,6 +471,8 @@ class _ReviseLetterScreenState
                     ),
             ),
           ),
+
+          const SizedBox(height: 24),
         ],
       ),
     );
