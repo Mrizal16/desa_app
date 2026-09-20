@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../services/api_service.dart';
+import 'revise_letter_screen.dart';
 
 class LetterDetailScreen extends StatefulWidget {
   final int letterId;
@@ -18,6 +19,7 @@ class LetterDetailScreen extends StatefulWidget {
 class _LetterDetailScreenState
     extends State<LetterDetailScreen> {
   Map<String, dynamic>? letter;
+
   bool loading = true;
   String? error;
 
@@ -29,6 +31,13 @@ class _LetterDetailScreenState
 
   Future<void> loadDetail() async {
     try {
+      if (mounted) {
+        setState(() {
+          loading = true;
+          error = null;
+        });
+      }
+
       final result =
           await ApiService.getLetterDetail(
         widget.letterId,
@@ -48,6 +57,7 @@ class _LetterDetailScreenState
               'Exception: ',
               '',
             );
+
         loading = false;
       });
     }
@@ -84,8 +94,7 @@ class _LetterDetailScreenState
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius:
-            BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: const Color(0xFFE2E8F0),
         ),
@@ -116,11 +125,41 @@ class _LetterDetailScreenState
     );
   }
 
+  Future<void> openRevision() async {
+    if (letter == null) {
+      return;
+    }
+
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ReviseLetterScreen(
+          letterId:
+              letter!['id'] ?? widget.letterId,
+          requestNumber:
+              letter!['request_number']
+                      ?.toString() ??
+                  '-',
+          adminNote:
+              letter!['admin_note']?.toString(),
+        ),
+      ),
+    );
+
+    if (result == true) {
+      await loadDetail();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final status =
+        letter?['status']?.toString() ?? '';
+
     return Scaffold(
       backgroundColor:
           const Color(0xFFF1F5F9),
+
       appBar: AppBar(
         title: const Text(
           'Detail Surat',
@@ -132,6 +171,7 @@ class _LetterDetailScreenState
         foregroundColor:
             const Color(0xFF0F172A),
       ),
+
       body: loading
           ? const Center(
               child:
@@ -139,29 +179,74 @@ class _LetterDetailScreenState
             )
           : error != null
               ? Center(
-                  child: Text(error!),
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.all(
+                      24,
+                    ),
+                    child: Column(
+                      mainAxisSize:
+                          MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons
+                              .error_outline_rounded,
+                          size: 48,
+                          color: Colors.red,
+                        ),
+                        const SizedBox(
+                          height: 12,
+                        ),
+                        Text(
+                          error!,
+                          textAlign:
+                              TextAlign.center,
+                        ),
+                        const SizedBox(
+                          height: 16,
+                        ),
+                        ElevatedButton(
+                          onPressed: loadDetail,
+                          child:
+                              const Text(
+                            'Coba Lagi',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 )
               : RefreshIndicator(
                   onRefresh: loadDetail,
                   child: ListView(
+                    physics:
+                        const AlwaysScrollableScrollPhysics(),
                     padding:
-                        const EdgeInsets.all(18),
+                        const EdgeInsets.all(
+                      18,
+                    ),
                     children: [
                       Container(
                         padding:
                             const EdgeInsets.all(
                           20,
                         ),
-                        decoration: BoxDecoration(
+                        decoration:
+                            BoxDecoration(
                           gradient:
                               const LinearGradient(
                             colors: [
-                              Color(0xFF0EA5E9),
-                              Color(0xFF2563EB),
+                              Color(
+                                0xFF0EA5E9,
+                              ),
+                              Color(
+                                0xFF2563EB,
+                              ),
                             ],
                           ),
                           borderRadius:
-                              BorderRadius.circular(
+                              BorderRadius
+                                  .circular(
                             24,
                           ),
                         ),
@@ -173,22 +258,26 @@ class _LetterDetailScreenState
                             const Icon(
                               Icons
                                   .description_outlined,
-                              color: Colors.white,
+                              color:
+                                  Colors.white,
                               size: 34,
                             ),
                             const SizedBox(
                               height: 18,
                             ),
                             Text(
-                              letter?['letter_type']
+                              letter?[
+                                          'letter_type']
                                       ?['name'] ??
                                   'Surat',
                               style:
                                   const TextStyle(
-                                color: Colors.white,
+                                color:
+                                    Colors.white,
                                 fontSize: 22,
                                 fontWeight:
-                                    FontWeight.bold,
+                                    FontWeight
+                                        .bold,
                               ),
                             ),
                             const SizedBox(
@@ -200,25 +289,29 @@ class _LetterDetailScreenState
                                   '-',
                               style:
                                   const TextStyle(
-                                color:
-                                    Colors.white70,
+                                color: Colors
+                                    .white70,
                               ),
                             ),
                           ],
                         ),
                       ),
 
-                      const SizedBox(height: 18),
+                      const SizedBox(
+                        height: 18,
+                      ),
 
                       Container(
                         padding:
                             const EdgeInsets.all(
                           16,
                         ),
-                        decoration: BoxDecoration(
+                        decoration:
+                            BoxDecoration(
                           color: Colors.white,
                           borderRadius:
-                              BorderRadius.circular(
+                              BorderRadius
+                                  .circular(
                             18,
                           ),
                           border: Border.all(
@@ -235,9 +328,11 @@ class _LetterDetailScreenState
                           children: [
                             const Text(
                               'Status',
-                              style: TextStyle(
+                              style:
+                                  TextStyle(
                                 fontWeight:
-                                    FontWeight.w600,
+                                    FontWeight
+                                        .w600,
                               ),
                             ),
                             Container(
@@ -251,8 +346,7 @@ class _LetterDetailScreenState
                                   BoxDecoration(
                                 color:
                                     getStatusColor(
-                                  letter?['status'] ??
-                                      '',
+                                  status,
                                 ).withOpacity(
                                   0.12,
                                 ),
@@ -263,18 +357,19 @@ class _LetterDetailScreenState
                                 ),
                               ),
                               child: Text(
-                                letter?['status'] ??
-                                    '-',
+                                status.isEmpty
+                                    ? '-'
+                                    : status,
                                 style:
                                     TextStyle(
                                   color:
                                       getStatusColor(
-                                    letter?['status'] ??
-                                        '',
+                                    status,
                                   ),
                                   fontSize: 12,
                                   fontWeight:
-                                      FontWeight.bold,
+                                      FontWeight
+                                          .bold,
                                 ),
                               ),
                             ),
@@ -282,34 +377,39 @@ class _LetterDetailScreenState
                         ),
                       ),
 
-                      const SizedBox(height: 14),
+                      const SizedBox(
+                        height: 14,
+                      ),
 
                       infoCard(
                         'Keperluan',
-                        letter?['purpose'] ?? '-',
+                        letter?['purpose']
+                                ?.toString() ??
+                            '-',
                       ),
 
-                      const SizedBox(height: 14),
+                      const SizedBox(
+                        height: 14,
+                      ),
 
                       infoCard(
                         'Metode Pengiriman',
-                        letter?[
-                                    'delivery_method'] ==
+                        letter?['delivery_method'] ==
                                 'pdf'
                             ? 'PDF'
-                            : letter?[
-                                        'delivery_method'] ==
+                            : letter?['delivery_method'] ==
                                     'pickup'
                                 ? 'Ambil di Kantor Desa'
                                 : '-',
                       ),
 
-                      const SizedBox(height: 14),
-
                       if ((letter?['admin_note'] ??
                               '')
                           .toString()
-                          .isNotEmpty)
+                          .isNotEmpty) ...[
+                        const SizedBox(
+                          height: 14,
+                        ),
                         Container(
                           padding:
                               const EdgeInsets.all(
@@ -323,8 +423,11 @@ class _LetterDetailScreenState
                             ),
                             borderRadius:
                                 BorderRadius
-                                    .circular(18),
-                            border: Border.all(
+                                    .circular(
+                              18,
+                            ),
+                            border:
+                                Border.all(
                               color:
                                   const Color(
                                 0xFFFED7AA,
@@ -336,17 +439,33 @@ class _LetterDetailScreenState
                                 CrossAxisAlignment
                                     .start,
                             children: [
-                              const Text(
-                                'Catatan Admin',
-                                style:
-                                    TextStyle(
-                                  color:
-                                      Color(
-                                    0xFFEA580C,
+                              const Row(
+                                children: [
+                                  Icon(
+                                    Icons
+                                        .info_outline,
+                                    size: 20,
+                                    color: Color(
+                                      0xFFEA580C,
+                                    ),
                                   ),
-                                  fontWeight:
-                                      FontWeight.bold,
-                                ),
+                                  SizedBox(
+                                    width: 8,
+                                  ),
+                                  Text(
+                                    'Catatan Admin',
+                                    style:
+                                        TextStyle(
+                                      color:
+                                          Color(
+                                        0xFFEA580C,
+                                      ),
+                                      fontWeight:
+                                          FontWeight
+                                              .bold,
+                                    ),
+                                  ),
+                                ],
                               ),
                               const SizedBox(
                                 height: 8,
@@ -359,8 +478,60 @@ class _LetterDetailScreenState
                             ],
                           ),
                         ),
+                      ],
 
-                      if ((letter?['documents']
+                      if (status ==
+                          'PERLU PERBAIKAN') ...[
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        SizedBox(
+                          width:
+                              double.infinity,
+                          height: 52,
+                          child:
+                              ElevatedButton.icon(
+                            onPressed:
+                                openRevision,
+                            icon:
+                                const Icon(
+                              Icons
+                                  .edit_document,
+                            ),
+                            label:
+                                const Text(
+                              'Perbaiki Pengajuan',
+                              style:
+                                  TextStyle(
+                                fontWeight:
+                                    FontWeight
+                                        .bold,
+                              ),
+                            ),
+                            style:
+                                ElevatedButton
+                                    .styleFrom(
+                              backgroundColor:
+                                  const Color(
+                                0xFFEA580C,
+                              ),
+                              foregroundColor:
+                                  Colors.white,
+                              shape:
+                                  RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius
+                                        .circular(
+                                  14,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+
+                      if ((letter?[
+                                      'documents']
                                   as List?)
                               ?.isNotEmpty ??
                           false) ...[
@@ -369,36 +540,43 @@ class _LetterDetailScreenState
                         ),
                         const Text(
                           'Dokumen',
-                          style: TextStyle(
+                          style:
+                              TextStyle(
                             fontSize: 18,
                             fontWeight:
-                                FontWeight.bold,
+                                FontWeight
+                                    .bold,
                           ),
                         ),
                         const SizedBox(
                           height: 12,
                         ),
                         ...List.generate(
-                          (letter?['documents']
+                          (letter?[
+                                      'documents']
                                   as List)
                               .length,
                           (index) {
                             final document =
                                 letter?[
-                                    'documents'][index];
+                                        'documents']
+                                    [index];
 
                             return Container(
                               margin:
-                                  const EdgeInsets.only(
+                                  const EdgeInsets
+                                      .only(
                                 bottom: 10,
                               ),
                               padding:
-                                  const EdgeInsets.all(
+                                  const EdgeInsets
+                                      .all(
                                 14,
                               ),
                               decoration:
                                   BoxDecoration(
-                                color: Colors.white,
+                                color:
+                                    Colors.white,
                                 borderRadius:
                                     BorderRadius
                                         .circular(
@@ -426,7 +604,8 @@ class _LetterDetailScreenState
                                     width: 12,
                                   ),
                                   Expanded(
-                                    child: Column(
+                                    child:
+                                        Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment
                                               .start,
@@ -443,12 +622,16 @@ class _LetterDetailScreenState
                                           ),
                                         ),
                                         const SizedBox(
-                                          height: 3,
+                                          height:
+                                              3,
                                         ),
                                         Text(
                                           document[
                                                   'file_name'] ??
                                               '-',
+                                          overflow:
+                                              TextOverflow
+                                                  .ellipsis,
                                           style:
                                               const TextStyle(
                                             color:
@@ -468,6 +651,10 @@ class _LetterDetailScreenState
                           },
                         ),
                       ],
+
+                      const SizedBox(
+                        height: 28,
+                      ),
                     ],
                   ),
                 ),
